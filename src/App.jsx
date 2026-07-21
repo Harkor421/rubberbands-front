@@ -110,7 +110,7 @@ export default function App() {
           pushToast({
             big: msg.count >= 10,
             title: `$${fmtNum(msg.totalUsd)} HANDED OUT`,
-            body: `${msg.count} holder${msg.count === 1 ? "" : "s"} got their dollar${msg.ranOut ? " — drawer ran out before the tail" : ""}. Check your wallet.`,
+            body: `${msg.count} holder${msg.count === 1 ? "" : "s"} got their dollar${msg.ranOut ? ", then the drawer ran out" : ""}. Check your wallet.`,
           });
         return;
       case "payments_update":
@@ -180,7 +180,7 @@ export default function App() {
           demoBurst(count);
           pushToast({
             title: `$${count} HANDED OUT`,
-            body: `${count} holders got their dollar${count < hs.length ? " — drawer ran out before the tail" : ""}.`,
+            body: `${count} holders got their dollar${count < hs.length ? ", then the drawer ran out" : ""}.`,
           });
         }
       }
@@ -239,6 +239,7 @@ export default function App() {
   /* -------------------------------- render ------------------------------ */
   return (
     <div className="wrap">
+      <FallingBits />
       {/* rolling office-tape ticker */}
       <div className="tape" aria-hidden="true">
         <div className="tape-track">
@@ -246,7 +247,7 @@ export default function App() {
             <span key={rep} className="tape-group">
               {Array.from({ length: 6 }).map((_, i) => (
                 <span key={i} className="tape-item">
-                  HOLD ${TICKER} — GET $1 <BandLoop size={22} /> EVERY 5 MINUTES <BandLoop size={22} /> BIGGEST BAGS FIRST <BandLoop size={22} /> NO CLAIMING <BandLoop size={22} />
+                  HOLD ${TICKER}, GET $1 <BandLoop size={22} /> EVERY 5 MINUTES <BandLoop size={22} /> BIGGEST BAGS FIRST <BandLoop size={22} /> NO CLAIMING <BandLoop size={22} />
                 </span>
               ))}
             </span>
@@ -285,8 +286,8 @@ export default function App() {
             <Reveal delay={0.16}><p className="hero-sub">
               <strong>Rubberbands &amp; More</strong> is stupid simple: creator fees pile up
               in the drawer. Every <strong>5 minutes</strong> we hand{" "}
-              <strong>$1 in ETH</strong> to every holder — <strong>biggest bags
-              first</strong> — until the drawer runs out. No staking. No claiming.
+              <strong>$1 in ETH</strong> to every holder, <strong>biggest bags
+              first</strong>, until the drawer runs out. No staking. No claiming.
               Just a dollar, on the dot.
             </p></Reveal>
             <Reveal delay={0.24} className="hero-cta">
@@ -348,30 +349,11 @@ export default function App() {
           <Reveal delay={0.21}><div className="stat"><b>{paidUsd ? `$${fmtNum(paidAnim)}` : "—"}</b><span>paid to holders</span><Smiley /></div></Reveal>
         </section>
 
-        {/* how it works — three pinned notes */}
+        {/* how it works — animated flow diagram */}
         <section className="how" id="how">
           <Reveal><h2 className="h2">HOW THE DOLLARS GET DROPPED</h2></Reveal>
-          <div className="steps">
-            <Reveal><div className="step s1">
-              <span className="step-pin"><Pin color="#ffd21f" /></span>
-              <span className="step-n">01</span>
-              <h3>FEES FILL THE DRAWER</h3>
-              <p>Every trade of ${TICKER} sends creator fees (ETH) to the drawer wallet. It's public — watch it stack on-chain.</p>
-            </div></Reveal>
-            <Reveal delay={0.1}><div className="step s2">
-              <span className="step-pin"><Pin color="#3b6fe0" /></span>
-              <span className="step-n">02</span>
-              <h3>WE COUNT THE DRAWER</h3>
-              <p>Every 5 minutes: drawer ÷ <strong>$1</strong> = how many holders get paid this round. ETH price checked live, so a dollar is a dollar.</p>
-            </div></Reveal>
-            <Reveal delay={0.2}><div className="step s3">
-              <span className="step-pin"><Pin color="#e8501f" /></span>
-              <span className="step-n">03</span>
-              <h3>$1 HITS YOUR WALLET</h3>
-              <p>From the <strong>biggest bag down</strong>, every holder with <strong>≥0.1%</strong> of supply gets $1 of native ETH till it runs out. No claiming, ever.</p>
-            </div></Reveal>
-          </div>
-          <Reveal className="math" delay={0.1}>your spot = your rank by bag · payout = $1 flat · every 5 minutes · till the drawer runs out</Reveal>
+          <Reveal delay={0.1} className="howfig-wrap"><HowDiagram ticker={TICKER} /></Reveal>
+          <Reveal className="math" delay={0.15}>your spot = your rank by bag · payout = $1 flat · every 5 minutes · till the drawer runs out</Reveal>
         </section>
 
         {/* paid feed */}
@@ -412,7 +394,7 @@ export default function App() {
         <section className="spot" id="spot">
           <Reveal>
           <h2 className="h2">YOUR SPOT IN LINE</h2>
-          <p className="spot-sub">Paste your wallet. The line is sorted by bag size — the drawer pays top-down.</p>
+          <p className="spot-sub">Paste your wallet. The line is sorted by bag size, and the drawer pays top-down.</p>
           <div className="checker">
             <input
               value={lookup}
@@ -433,7 +415,7 @@ export default function App() {
 
       <footer className="foot">
         <BandBall size={44} className="foot-ball" />
-        <p>© 2026 Rubberbands &amp; More — office supplies, not financial advice. Bands snap; the risk is yours.</p>
+        <p>© 2026 Rubberbands &amp; More. Office supplies, not financial advice. Bands snap; the risk is yours.</p>
       </footer>
 
       {/* toasts */}
@@ -551,6 +533,208 @@ function Pin({ color = "#ffd21f", size = 26 }) {
   );
 }
 
+/* slow office-supply rain behind everything, barely-there opacity */
+function FallingBits() {
+  // hand-placed so the spread looks organic but never busy
+  const bits = [
+    { k: "band", left: "4%", s: 44, d: 34, del: -3, o: 0.13 },
+    { k: "pin", left: "11%", s: 20, d: 27, del: -14, o: 0.14, c: "#ffd21f" },
+    { k: "clip", left: "18%", s: 26, d: 39, del: -22, o: 0.12 },
+    { k: "bill", left: "26%", s: 34, d: 30, del: -8, o: 0.12 },
+    { k: "band", left: "33%", s: 30, d: 25, del: -19, o: 0.12 },
+    { k: "eraser", left: "40%", s: 30, d: 36, del: -5, o: 0.11 },
+    { k: "pin", left: "47%", s: 17, d: 29, del: -25, o: 0.13, c: "#3b6fe0" },
+    { k: "band", left: "54%", s: 52, d: 41, del: -11, o: 0.1 },
+    { k: "clip", left: "61%", s: 22, d: 28, del: -2, o: 0.12 },
+    { k: "bill", left: "68%", s: 28, d: 33, del: -17, o: 0.12 },
+    { k: "pin", left: "74%", s: 21, d: 26, del: -9, o: 0.13, c: "#e8501f" },
+    { k: "band", left: "81%", s: 36, d: 37, del: -27, o: 0.12 },
+    { k: "eraser", left: "88%", s: 24, d: 31, del: -13, o: 0.11 },
+    { k: "clip", left: "94%", s: 28, d: 35, del: -20, o: 0.12 },
+    { k: "band", left: "97%", s: 26, d: 27, del: -6, o: 0.11 },
+    { k: "pin", left: "58%", s: 16, d: 40, del: -31, o: 0.12, c: "#ffd21f" },
+  ];
+  return (
+    <div className="rain" aria-hidden="true">
+      {bits.map((b, i) => (
+        <span
+          key={i}
+          className={`rain-bit ${i % 3 === 0 ? "rain-sway" : ""}`}
+          style={{ left: b.left, opacity: b.o, animationDuration: `${b.d}s`, animationDelay: `${b.del}s` }}
+        >
+          {b.k === "band" && <BandLoop size={b.s} loose />}
+          {b.k === "pin" && <Pin color={b.c} size={b.s} />}
+          {b.k === "clip" && (
+            <svg width={b.s} height={b.s * 1.6} viewBox="0 0 24 38" fill="none">
+              <path d="M8 11 a4 4 0 0 1 8 0 v17 a6 6 0 0 1 -12 0 V13 a8.5 8.5 0 0 1 17 0 v16" stroke="#f4eec6" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          )}
+          {b.k === "eraser" && (
+            <svg width={b.s} height={b.s * 0.62} viewBox="0 0 30 19" fill="none">
+              <rect x="1.5" y="7" width="27" height="10.5" rx="3" fill="#3b6fe0" />
+              <rect x="4.5" y="1.5" width="21" height="9" rx="2.5" fill="#f4eec6" />
+            </svg>
+          )}
+          {b.k === "bill" && (
+            <svg width={b.s} height={b.s * 0.58} viewBox="0 0 46 27" fill="none">
+              <rect x="1.5" y="1.5" width="43" height="24" rx="5" fill="#ffd21f" stroke="#0d5c50" strokeWidth="2" />
+              <text x="23" y="19" textAnchor="middle" fontFamily="Titan One, sans-serif" fontSize="13" fill="#0d5c50">$1</text>
+            </svg>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* sticker rect with the hard teal offset, for the diagram */
+function Sticker({ x, y, w, h, r = 12, fill = "var(--paper)", off = 4, dash = false, className = "" }) {
+  return (
+    <g className={className}>
+      <rect x={x + off} y={y + off + 1} width={w} height={h} rx={r} fill="var(--teal-deep)" />
+      <rect x={x} y={y} width={w} height={h} rx={r} fill={fill} stroke="var(--teal-deep)" strokeWidth="3" strokeDasharray={dash ? "7 5" : undefined} />
+    </g>
+  );
+}
+
+/* the whole mechanic as one looping animated scene, same claymation kit */
+function HowDiagram({ ticker = "RBM" }) {
+  const chips = [
+    { y: 96, rank: 1, addr: "0xa41…9f2", bar: 170, pct: "2.41%" },
+    { y: 160, rank: 2, addr: "0x7c0…b31", bar: 120, pct: "1.12%" },
+    { y: 224, rank: 3, addr: "0xe88…04d", bar: 78, pct: "0.43%" },
+    { y: 288, rank: 4, addr: "0x3fa…c77", bar: 44, pct: "0.19%" },
+  ];
+  const bills = [
+    { cls: "fig-bill1", popCls: "fig-pop1", chip: chips[0] },
+    { cls: "fig-bill2", popCls: "fig-pop2", chip: chips[1] },
+    { cls: "fig-bill3", popCls: "fig-pop3", chip: chips[2] },
+  ];
+  return (
+    <svg
+      className="howfig"
+      viewBox="0 0 960 400"
+      role="img"
+      aria-label={`Trades of $${ticker} send ETH fees into the drawer. Every 5 minutes the drawer is divided into $1 payouts and paid to holders, biggest bags first, until it runs out.`}
+    >
+      {/* zone tags */}
+      <g>
+        <Sticker x={30} y={22} w={216} h={34} r={10} />
+        <rect x={38} y={27} width={26} height={24} rx={6} fill="var(--yellow)" stroke="var(--teal-deep)" strokeWidth="2.5" />
+        <text className="fig-display" x={51} y={44} textAnchor="middle" fontSize="13" fill="var(--ink)">01</text>
+        <text className="fig-display" x={72} y={45} fontSize="13.5" fill="var(--teal-deep)">FEES FILL THE DRAWER</text>
+        <text className="fig-small" x={34} y={76} fontSize="11" fill="var(--paper)">every trade drips ETH in</text>
+
+        <Sticker x={330} y={22} w={220} h={34} r={10} />
+        <rect x={338} y={27} width={26} height={24} rx={6} fill="var(--blue)" stroke="var(--teal-deep)" strokeWidth="2.5" />
+        <text className="fig-display" x={351} y={44} textAnchor="middle" fontSize="13" fill="#fff">02</text>
+        <text className="fig-display" x={372} y={45} fontSize="13.5" fill="var(--teal-deep)">WE COUNT THE DRAWER</text>
+        <text className="fig-small" x={334} y={76} fontSize="11" fill="var(--paper)">drawer ÷ $1 = payouts this round</text>
+
+        <Sticker x={660} y={22} w={212} h={34} r={10} />
+        <rect x={668} y={27} width={26} height={24} rx={6} fill="var(--red)" stroke="var(--teal-deep)" strokeWidth="2.5" />
+        <text className="fig-display" x={681} y={44} textAnchor="middle" fontSize="13" fill="#fff">03</text>
+        <text className="fig-display" x={702} y={45} fontSize="13.5" fill="var(--teal-deep)">$1 HITS YOUR WALLET</text>
+        <text className="fig-small" x={664} y={76} fontSize="11" fill="var(--paper)">biggest bags first, till it's gone</text>
+      </g>
+
+      {/* dashed arteries */}
+      <path className="fig-dash" d="M 186 196 C 226 206, 242 216, 268 226" fill="none" stroke="var(--paper)" strokeWidth="3" strokeLinecap="round" opacity="0.75" />
+      <path className="fig-dash" d="M 458 236 C 530 250, 560 232, 606 200" fill="none" stroke="var(--paper)" strokeWidth="3" strokeLinecap="round" opacity="0.75" />
+
+      {/* loose band squiggle for flavor */}
+      <path d="M 560 330 C 560 318 578 318 583 327 C 588 336 598 336 603 327 C 608 318 626 318 626 330 C 626 342 608 342 603 333 C 598 324 588 324 583 333 C 578 342 560 342 560 330 Z" fill="none" stroke="var(--band)" strokeWidth="3.6" opacity="0.85" />
+
+      {/* the trades chip */}
+      <Sticker x={30} y={150} w={152} h={66} r={14} />
+      <svg x={44} y={162} width={40} height={40} viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="46" fill="#e2cb79" />
+        <g fill="none" strokeLinecap="round">
+          <ellipse cx="60" cy="60" rx="44" ry="18" transform="rotate(-24 60 60)" stroke="#d8bc63" strokeWidth="7" />
+          <ellipse cx="60" cy="60" rx="43" ry="28" transform="rotate(42 60 60)" stroke="#c7a94f" strokeWidth="6.5" />
+          <ellipse cx="60" cy="60" rx="44" ry="34" transform="rotate(-70 60 60)" stroke="#cb854e" strokeWidth="6.5" />
+        </g>
+        <circle cx="46" cy="44" r="13" fill="#fff" /><circle cx="48.5" cy="46.5" r="6.2" fill="#141414" />
+        <circle cx="76" cy="48" r="11.5" fill="#fff" /><circle cx="78" cy="50.5" r="5.5" fill="#141414" />
+      </svg>
+      <text className="fig-display" x={92} y={192} fontSize="20" fill="var(--teal-deep)">${ticker}</text>
+      <text className="fig-small" x={34} y={240} fontSize="11" fill="var(--paper)">creator fees (ETH)</text>
+
+      {/* ETH coins dripping into the drawer */}
+      {["fig-c1", "fig-c2", "fig-c3"].map((c) => (
+        <g key={c} className={`fig-coin ${c}`} transform="translate(192,178)">
+          <circle r="11" fill="var(--teal)" stroke="var(--teal-deep)" strokeWidth="2.5" />
+          <text className="fig-mono" x="0" y="4.2" textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--paper)">Ξ</text>
+        </g>
+      ))}
+
+      {/* the drawer */}
+      <Sticker x={272} y={168} w={180} h={126} r={16} />
+      <rect x={286} y={182} width={152} height={62} rx={8} fill="#e6dda1" stroke="var(--teal-deep)" strokeWidth="2" />
+      <g className="fig-fill">
+        <rect x={290} y={186} width={144} height={54} rx={5} fill="var(--yellow)" />
+        <line x1={298} y1={200} x2={330} y2={200} stroke="var(--yellow-deep)" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1={340} y1={212} x2={372} y2={212} stroke="var(--yellow-deep)" strokeWidth="2.5" strokeLinecap="round" />
+      </g>
+      <rect x={332} y={254} width={60} height={11} rx={5.5} fill="var(--teal)" stroke="var(--teal-deep)" strokeWidth="2" />
+      <path d="M330 271 Q338 265 346 269" fill="none" stroke="var(--ink)" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M362 272 Q370 266 377 270" fill="none" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx={339} cy={280} r={7.2} fill="#fff" /><circle cx={340.5} cy={281.5} r={3.4} fill="#141414" />
+      <circle cx={369} cy={281} r={6.4} fill="#fff" /><circle cx={370} cy={282.5} r={3} fill="#141414" />
+      <path d="M347 289 Q354 294 361 289" fill="none" stroke="var(--ink)" strokeWidth="2.4" strokeLinecap="round" />
+      <text className="fig-display" x={362} y={320} textAnchor="middle" fontSize="13" fill="var(--paper)">THE DRAWER</text>
+
+      {/* the 5-minute dial */}
+      <circle cx={434} cy={116} r={31} fill="var(--teal-deep)" opacity="0.9" transform="translate(3,4)" />
+      <circle cx={430} cy={112} r={31} fill="var(--paper)" stroke="var(--teal-deep)" strokeWidth="3" />
+      {[0, 90, 180, 270].map((a) => (
+        <line key={a} x1={430} y1={86} x2={430} y2={90} stroke="var(--teal)" strokeWidth="2.5" strokeLinecap="round" transform={`rotate(${a} 430 112)`} />
+      ))}
+      <g className="fig-hand">
+        <line x1={430} y1={112} x2={430} y2={91} stroke="var(--red)" strokeWidth="3.5" strokeLinecap="round" />
+      </g>
+      <circle cx={430} cy={112} r={3.2} fill="var(--ink)" />
+      <text className="fig-small" x={430} y={158} textAnchor="middle" fontSize="10.5" fill="var(--paper)">every 5 min</text>
+      <g className="fig-count">
+        <Sticker x={468} y={94} w={116} h={30} r={9} fill="var(--yellow)" off={3} />
+        <text className="fig-mono" x={526} y={114} textAnchor="middle" fontSize="11.5" fontWeight="700" fill="var(--ink)">÷ $1 = 3 payouts</text>
+      </g>
+
+      {/* the line: holders ranked by bag */}
+      {chips.map((c, i) => (
+        <g key={c.rank} className={i < 3 ? `fig-chip fig-chipP${i + 1}` : "fig-chip4"}>
+          <Sticker x={620} y={c.y} w={300} h={52} r={12} dash={i === 3} />
+          <circle cx={646} cy={c.y + 26} r={13} fill={i === 0 ? "var(--yellow)" : "var(--paper2)"} stroke="var(--teal-deep)" strokeWidth="2.5" />
+          <text className="fig-display" x={646} y={c.y + 31} textAnchor="middle" fontSize="13" fill={i === 0 ? "var(--ink)" : "var(--teal-deep)"}>{c.rank}</text>
+          <text className="fig-mono" x={668} y={c.y + 22} fontSize="12" fill="var(--ink)">{c.addr}</text>
+          <rect x={668} y={c.y + 30} width={c.bar} height={9} rx={4.5} fill="var(--teal)" opacity="0.85" />
+          <text className="fig-mono" x={906} y={c.y + 31} textAnchor="end" fontSize="11.5" fontWeight="700" fill="var(--ink)">{c.pct}</text>
+        </g>
+      ))}
+      <g className="fig-next">
+        <Sticker x={796} y={266} w={122} h={26} r={8} fill="var(--paper2)" off={3} />
+        <text className="fig-mono" x={857} y={283} textAnchor="middle" fontSize="11" fontWeight="700" fill="var(--teal-deep)">next round ↻</text>
+      </g>
+
+      {/* the flying dollars */}
+      {bills.map((b) => (
+        <g key={b.cls} className={`fig-bill ${b.cls}`} transform="translate(352,192)">
+          <rect x={2.5} y={3.5} width={46} height={27} rx={6} fill="var(--teal-deep)" />
+          <rect width={46} height={27} rx={6} fill="var(--yellow)" stroke="var(--teal-deep)" strokeWidth="2.5" />
+          <text className="fig-display" x={23} y={19.5} textAnchor="middle" fontSize="14" fill="var(--teal-deep)">$1</text>
+        </g>
+      ))}
+      {/* +$1.00 pops on landing */}
+      {bills.map((b) => (
+        <g key={b.popCls} className={`fig-pop ${b.popCls}`}>
+          <Sticker x={836} y={b.chip.y - 12} w={76} h={24} r={8} fill="var(--yellow)" off={3} />
+          <text className="fig-display" x={874} y={b.chip.y + 5} textAnchor="middle" fontSize="12" fill="var(--ink)">+$1.00</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 /* a tiny corner smiley, like the faces on the staplers */
 function Smiley() {
   return (
@@ -566,7 +750,7 @@ function SpotResult({ holder, query, coverage, payoutUsd, minPct }) {
   if (!holder) {
     return (
       <div className="spot-res miss">
-        <b>{query.length > 16 ? shortAddr(query) : query}</b> isn't in the line yet — it holds less
+        <b>{query.length > 16 ? shortAddr(query) : query}</b> isn't in the line yet. It holds less
         than {minPct}% of the supply. Top up and the drawer includes you automatically.
       </div>
     );
@@ -596,7 +780,7 @@ function SpotResult({ holder, query, coverage, payoutUsd, minPct }) {
       </div>
       {!covered && coverage != null && (
         <p className="spot-note">
-          The drawer covers {coverage.toLocaleString()} spot{coverage === 1 ? "" : "s"} right now — about{" "}
+          The drawer covers {coverage.toLocaleString()} spot{coverage === 1 ? "" : "s"} right now. About{" "}
           <b>${fmtNum((holder.rank - coverage) * payoutUsd)}</b> more in fees and the line reaches you.
         </p>
       )}
